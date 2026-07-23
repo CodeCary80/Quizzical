@@ -2,6 +2,8 @@
 
 A React quiz app built as a solo practice project. Pulls 5 random trivia questions from the Open Trivia Database API, lets you pick an answer for each, then checks your score with correct/incorrect highlighting.
 
+Live Demo: https://quizzical80.netlify.app/
+
 ## Features
 
 - Fetches 5 questions from the [Open Trivia DB](https://opentdb.com/) API

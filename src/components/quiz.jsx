@@ -18,12 +18,14 @@ export default function Quiz({finishQuiz}) {
     const [answers, setAnswers] = useState({})
     const [checked, setChecked] = useState(false)
     const [loading,setLoading] = useState(true)
+    const [showRetry, setShowRetry] = useState(false)
+    const [attempt, setAttempt] = useState(0)
 
-    function handleCheckAnswers(){
-    setChecked(true)
-}
+    function loadQuestions(){
+        setLoading(true)
+        setShowRetry(false)
+        setAttempt((a)=>a+1)
 
-    useEffect(() => {
         const startTime = Date.now()
         const MIN_LOADING_TIME = 1500
 
@@ -35,20 +37,43 @@ export default function Quiz({finishQuiz}) {
             }))
 
             const elapsed = Date.now() - startTime
-        const remaining = MIN_LOADING_TIME - elapsed
+            const remaining = MIN_LOADING_TIME - elapsed
 
-        if (remaining > 0) {
-            setTimeout(() => {
+            if (remaining > 0) {
+                setTimeout(() => {
+                    setQuestions(formatted)
+                    setLoading(false)
+                }, remaining)
+            } else {
                 setQuestions(formatted)
                 setLoading(false)
-            }, remaining)
-        } else {
-            setQuestions(formatted)
-            setLoading(false)
-        }
-    })
-        
+            }
+        })
+            .catch(()=>{
+
+            })
+
+
+    }
+
+
+    useEffect(() => {
+        loadQuestions()
         }, [])
+
+    useEffect(()=>{
+        if(!loading) return
+
+        const timer = setTimeout(()=>{
+            setShowRetry(true)
+        },6000)
+
+        return ()=> clearTimeout(timer)
+    },[attempt])
+
+    function handleCheckAnswers(){
+            setChecked(true)
+        }
 
     function selectAnswer(questionIndex,option){
         setAnswers((prev)=>({...prev,[questionIndex]:option}))
@@ -67,8 +92,20 @@ export default function Quiz({finishQuiz}) {
     if(loading){
         return (
             <div className="question-loader" role="status" aria-live="polite">
-                <p className="loading-text">Loading</p>
+                <p className="loading-text" key={attempt}>Loading</p>
                 <p className="loading-message">Building your quiz</p>
+
+                {showRetry && (
+
+                    <div className="loading-retry">
+                        <p>This is taking longer than expected</p>
+                        <button className="retry-button" onClick={loadQuestions}>
+                            Try again
+                        </button>
+                    </div>
+
+                )}
+
             </div>
         )
     }

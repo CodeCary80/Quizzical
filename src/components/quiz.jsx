@@ -1,6 +1,7 @@
 import {useState,useEffect} from "react"
 import {fetchQuestions} from "../api/fetchQuestions"
 
+
 function decodeHtml(html){
     const text = document.createElement('textarea')
     text.innerHTML = html
@@ -111,7 +112,7 @@ export default function Quiz({finishQuiz}) {
     }
 
     return(
-        <div className="quiz">
+        <div className={`quiz ${checked ? "checked" : ""}`}>
             {questions.map((question,index)=>{
 
                 return(
@@ -121,19 +122,42 @@ export default function Quiz({finishQuiz}) {
                             {question.options.map((option)=>{
                                 const isSelected = answers[index] === option
                                 const isCorrected = option === question.correct_answer
+                                const isIncorrectSelection = checked && isSelected && !isCorrected
 
                                 let className = 'option'
                                 if(isSelected) className += ` selected`
                                 if(checked && isCorrected) className += ` correct`
-                                if(checked && isSelected && !isCorrected) className += ` incorrect`
+                                if(isIncorrectSelection) className += ` incorrect`
+
+                                let answerStatus = ''
+                                if(checked && isCorrected){
+                                    answerStatus = "Correct answer"
+                                }else if (isIncorrectSelection){
+                                    answerStatus = "You answer is incorrect"
+                                }
 
                                 return(
                                     <button 
                                     key={option}
                                     className={className}
-                                    onClick={()=>selectAnswer(index,option)}
+                                    onClick={()=>{if(!checked){selectAnswer(index,option)}}}
+                                    aria-pressed={!checked ? isSelected : undefined}
+                                    aria-disabled={checked}
+                                    aria-label={answerStatus ? `${option}. ${answerStatus}.` : option}
                                     >
-                                        {option}   
+                                        <span className="option-text">{option}</span>
+                                         {checked && isCorrected && (
+                                            <span className="answer-status correct-status" aria-hidden="true">
+                                                <span className="status-icon">✓</span>
+                                                <span>Correct</span>
+                                            </span>
+                                        )} 
+                                         {isIncorrectSelection && (
+                                            <span className="answer-status incorrect-status" aria-hidden="true">
+                                                <span className="status-icon">✕</span>
+                                                <span>Incorrect</span>
+                                            </span>
+                                        )} 
                                     </button>
                                 ) 
                             })}
